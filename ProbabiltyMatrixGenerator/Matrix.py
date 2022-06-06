@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[20]:
+# In[1]:
 
 
 import pandas as pd
@@ -166,7 +166,7 @@ plt.title('BGD with Z normalization')
 # Now we're ready to make winning rate matrix. 
 
 
-# In[16]:
+# In[6]:
 
 
 ALmatchingCSV2021 = currentDir +"\\" + "ALmatching2021.csv"
@@ -183,7 +183,7 @@ NLmat_data2019 = pd.read_csv(NLmatchingCSV2019)
 NLmat_data2019.head()
 
 
-# In[43]:
+# In[75]:
 
 
 def find_rank(team):
@@ -238,16 +238,27 @@ for i in range(0,60):
             # row_rank, row_bat, row_pitch = find_rank(df_TM.iloc[i,0])
             # print(" cal = ", col_rank, "/" , row_rank)
             # df_TM.iloc[i,j] = round(row_rank / (col_rank + row_rank) , 2)
-            learn_from_past = round(row_rank / (col_rank + row_rank) , 2)
+            learn_from_past = round(row_rank / (col_rank + row_rank) , 3)
         elif df_TM.iloc[i,j] == '--' :
             # df_TM.iloc[i,j] = 999
             learn_from_past = 999
         else:
             # df_TM.iloc[i,j] = round(int(df_TM.iloc[i,j])/19,2)
-            learn_from_past = round(int(df_TM.iloc[i,j])/19,2)
+            # print("chk ### ", i, j , df_TM.columns[j], df_TM.iloc[i,0], df_TM.iloc[i,j], df_TM.iloc[j-1,i+1], type(df_TM.iloc[j-1,i+1]))
+            # if int(df_TM.iloc[j-1,i+1]) > 0 and int(df_TM.iloc[j-1,i+1]) < 1:
+            # print(type(int(df_TM.iloc[j-1,i+1])), df_TM.iloc[j-1,i+1], int(df_TM.iloc[j-1,i+1]) < 1)
+            if int(df_TM.iloc[j-1,i+1]) in range(0,1) :
+            # if  "." in df_TM.iloc[j-1,i+1]:
+                learn_from_past = round(1 - float(df_TM.iloc[j-1,i+1]),3)
+                # print("chk2 simple ### ", float(df_TM.iloc[j-1,i+1]), learn_from_past)
+            else:
+                total_g = int(df_TM.iloc[i,j]) + int(df_TM.iloc[j-1,i+1])
+                learn_from_past = round(int(df_TM.iloc[i,j])/total_g,3)
+                # print("chk3 calculate ### ", total_g, df_TM.iloc[i,j], df_TM.iloc[j-1,i+1], learn_from_past)
+                # learn_from_past = round(int(df_TM.iloc[i,j])/7,2)
         
         # For pitching ability, smaller value is better. Thus change the sequence to calculate the importance 
-        learn_from_ability = round((col_bat / (col_bat+row_bat)) * 0.46 + (col_pitch / (col_pitch+row_pitch)) * 0.54, 2)
+        learn_from_ability = round((col_bat / (col_bat+row_bat)) * 0.46 + (col_pitch / (col_pitch+row_pitch)) * 0.54, 3)
 
         forecasting_rate = round(learn_from_past * 0.5 + learn_from_ability * 0.5, 3)
         
@@ -256,6 +267,12 @@ for i in range(0,60):
             
         df_TM.iloc[i,j] = forecasting_rate
 
+for i in range(0,60):
+    for j in range(1,61):
+        chk_1 = float(df_TM.iloc[i,j]) + float(df_TM.iloc[j-1,i+1])
+        if chk_1 < 2 and chk_1 != 1:
+            df_TM.iloc[j-1,i+1] = round(1 - float(df_TM.iloc[i,j]),3)
+            # print("chk ### ", i, j , chk_1, df_TM.columns[j], df_TM.iloc[i,0], df_TM.iloc[i,j], df_TM.iloc[j-1,i+1], type(df_TM.iloc[j-1,i+1]))
 # print(batpitchdata.loc[0,'Team'], batpitchdata.loc[0,'Rank'] )
 
 
@@ -263,7 +280,24 @@ for i in range(0,60):
 print(df_TM)
 
 
-# In[56]:
+# In[8]:
+
+
+pd.set_option('display.max_seq_items', None)
+pd.set_option('display.max_columns', None)
+
+
+# In[9]:
+
+
+# import seaborn as sns  
+# df_TM = df_TM.unstack(level=0)
+# plt.figure(figsize=(15,15))
+# sns.heatmap(data = df_TM, annot=True, 
+# fmt = '.2f', linewidths=.5, cmap='Blues')
+
+
+# In[74]:
 
 
 def match(team1, team2):
@@ -292,7 +326,7 @@ def match(team1, team2):
                 print("Found Result :", df_TM.iloc[i,j])
                 return team1, df_TM.iloc[i,j]
             
-print(match('BAL21','BAL19'))
-print(match('BAL19','BAL21'))
+print(match('BAL21','CLE21'))
+print(match('CLE21','BAL21'))
 # print(match('BAL2021','CIN2021'))
 
