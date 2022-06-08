@@ -183,7 +183,7 @@ NLmat_data2019 = pd.read_csv(NLmatchingCSV2019)
 NLmat_data2019.head()
 
 
-# In[75]:
+# In[7]:
 
 
 def find_rank(team):
@@ -233,20 +233,11 @@ for i in range(0,60):
         forecasting_rate = 0
         
         if df_TM.iloc[i,j] == '999'  :
-            # print("CHk ", df_TM.columns[j], "," , df_TM.iloc[i,0])
-            # col_rank, col_bat, col_pitch = find_rank(df_TM.columns[j])
-            # row_rank, row_bat, row_pitch = find_rank(df_TM.iloc[i,0])
-            # print(" cal = ", col_rank, "/" , row_rank)
-            # df_TM.iloc[i,j] = round(row_rank / (col_rank + row_rank) , 2)
             learn_from_past = round(row_rank / (col_rank + row_rank) , 3)
         elif df_TM.iloc[i,j] == '--' :
             # df_TM.iloc[i,j] = 999
             learn_from_past = 999
         else:
-            # df_TM.iloc[i,j] = round(int(df_TM.iloc[i,j])/19,2)
-            # print("chk ### ", i, j , df_TM.columns[j], df_TM.iloc[i,0], df_TM.iloc[i,j], df_TM.iloc[j-1,i+1], type(df_TM.iloc[j-1,i+1]))
-            # if int(df_TM.iloc[j-1,i+1]) > 0 and int(df_TM.iloc[j-1,i+1]) < 1:
-            # print(type(int(df_TM.iloc[j-1,i+1])), df_TM.iloc[j-1,i+1], int(df_TM.iloc[j-1,i+1]) < 1)
             if int(df_TM.iloc[j-1,i+1]) in range(0,1) :
             # if  "." in df_TM.iloc[j-1,i+1]:
                 learn_from_past = round(1 - float(df_TM.iloc[j-1,i+1]),3)
@@ -272,10 +263,6 @@ for i in range(0,60):
         chk_1 = float(df_TM.iloc[i,j]) + float(df_TM.iloc[j-1,i+1])
         if chk_1 < 2 and chk_1 != 1:
             df_TM.iloc[j-1,i+1] = round(1 - float(df_TM.iloc[i,j]),3)
-            # print("chk ### ", i, j , chk_1, df_TM.columns[j], df_TM.iloc[i,0], df_TM.iloc[i,j], df_TM.iloc[j-1,i+1], type(df_TM.iloc[j-1,i+1]))
-# print(batpitchdata.loc[0,'Team'], batpitchdata.loc[0,'Rank'] )
-
-
 
 print(df_TM)
 
@@ -283,21 +270,18 @@ print(df_TM)
 # In[8]:
 
 
-pd.set_option('display.max_seq_items', None)
-pd.set_option('display.max_columns', None)
+# pd.set_option('display.max_seq_items', None)
+# pd.set_option('display.max_columns', None)
 
 
 # In[9]:
 
 
-# import seaborn as sns  
-# df_TM = df_TM.unstack(level=0)
-# plt.figure(figsize=(15,15))
-# sns.heatmap(data = df_TM, annot=True, 
-# fmt = '.2f', linewidths=.5, cmap='Blues')
+from IPython.core.display import HTML
+display(HTML(df_TM.to_html()))
 
 
-# In[74]:
+# In[146]:
 
 
 def match(team1, team2):
@@ -323,10 +307,110 @@ def match(team1, team2):
     for i in range(0,60):
         for j in range(0,61):
             if df_TM.iloc[i,0] == team1 and df_TM.columns[j] == team2:
-                print("Found Result :", df_TM.iloc[i,j])
+                # print("Found Result :", df_TM.iloc[i,j])
                 return team1, df_TM.iloc[i,j]
             
 print(match('BAL21','CLE21'))
 print(match('CLE21','BAL21'))
 # print(match('BAL2021','CIN2021'))
+
+
+# In[148]:
+
+
+names = ['BAL21','NYY21','SEA19','CHC19','LAD21','ATL21','TEX19','OAK21']
+# temp = []
+matrix = []
+
+for i in range(9):
+    temp = []
+    if i == 0 :
+        matrix.append(names)
+        continue
+    for j in range(9):
+        if j == 0 :
+            temp.append(names[i-1])
+            continue
+        temp.append(match(names[i-1],names[j-1])[1])
+    matrix.append(temp)
+
+# for n1,i in enumerate(names):
+#     for n2,j in enumerate(names):
+#         # print(match(i,j))
+#         matrix[n1][n2] = match(i,j)[1]
+        
+for i in matrix : print(i)
+
+
+# In[149]:
+
+
+filteredMatrix = []
+def filterResult(prob, threshold):
+    if prob >= 0.5 + threshold:
+        return 1
+    elif prob <= 0.5 - threshold:
+        return 0
+    else:
+        return 0.5
+
+for i in range(9):
+    temp = []
+    if i == 0 :
+        matrix.append(names)
+        continue
+    for j in range(9):
+        if j == 0 :
+            temp.append(names[i-1])
+            continue
+        temp.append(filterResult(match(names[i-1],names[j-1])[1], 0.2))
+    matrix.append(temp)
+
+for i in matrix : print(i)
+
+
+# In[151]:
+
+
+import random
+
+def make_mask(win_team, n):
+    pop_str =  df_TM.columns[1:].tolist()
+    # print("chk " , type(pop_str), pop_str)
+    pop_str.remove(win_team)
+    ran_choice = random.sample(pop_str,n-1)
+    names = []
+    matrix = []
+    names.insert(0,win_team)
+    j = 1
+    for i in ran_choice:
+        names.insert(j,ran_choice[j-1])
+        j += 1
+        
+    print("++Selected randomly ", n ," teams : ", names)
+    
+    filteredMatrix = []
+    def filterResult(prob, threshold):
+        if prob >= 0.5 + threshold:
+            return 1
+        elif prob <= 0.5 - threshold:
+            return 0
+        else:
+            return 0.5
+
+    for i in range(n+1):
+        temp = []
+        if i == 0 :
+            matrix.append(names)
+            continue
+        for j in range(n+1):
+            if j == 0 :
+                temp.append(names[i-1])
+                continue
+            temp.append(filterResult(match(names[i-1],names[j-1])[1], 0.1))
+        matrix.append(temp)
+
+    for i in matrix : print(i)
+
+make_mask('BAL19',20)
 
