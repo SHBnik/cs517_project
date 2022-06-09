@@ -183,7 +183,7 @@ NLmat_data2019 = pd.read_csv(NLmatchingCSV2019)
 NLmat_data2019.head()
 
 
-# In[7]:
+# In[300]:
 
 
 def find_rank(team):
@@ -254,7 +254,9 @@ for i in range(0,60):
         forecasting_rate = round(learn_from_past * 0.5 + learn_from_ability * 0.5, 3)
         
         if j == i+1 and forecasting_rate > 1:
-            forecasting_rate = 1
+            forecasting_rate = 0.5
+        # if j == i+1:
+        #     forecasting_rate = 0
             
         df_TM.iloc[i,j] = forecasting_rate
 
@@ -274,7 +276,7 @@ print(df_TM)
 # pd.set_option('display.max_columns', None)
 
 
-# In[9]:
+# In[301]:
 
 
 from IPython.core.display import HTML
@@ -369,7 +371,7 @@ for i in range(9):
 for i in matrix : print(i)
 
 
-# In[151]:
+# In[159]:
 
 
 import random
@@ -407,10 +409,208 @@ def make_mask(win_team, n):
             if j == 0 :
                 temp.append(names[i-1])
                 continue
-            temp.append(filterResult(match(names[i-1],names[j-1])[1], 0.1))
+            temp.append(filterResult(match(names[i-1],names[j-1])[1], 0.05))
         matrix.append(temp)
 
     for i in matrix : print(i)
+    ##
+    return matrix
 
-make_mask('BAL19',20)
+rt_matrix = make_mask('BAL19',32)
+
+
+# In[302]:
+
+
+# def find_matchup(cnt_1, seed, i):
+#     rt_matrix[i]
+        
+    
+# def make_bkt_helper(matrix, cnt_1, n, chose_o, start_seed, seed):
+#     idx = 0
+#     for i in rt_matrix[chose_o]:
+#         if idx != 0:
+#             if i != 1:
+#                 cnt_1[idx] = 0
+#             if idx == chose_o:
+#                 cnt_1[idx] = 0
+#         idx += 1
+#     print("+++ ", cnt_1)
+#     second_max = max(cnt_1[1:])
+#     print("chk ", second_max)
+#     second_idx = cnt_1.index(second_max)
+#     cnt_1[second_idx] = 0
+    
+#     print("chk chk ", start_seed)
+#     seed[start_seed] =chose_o
+#     rgt_tree = n // 2
+#     seed[start_seed + rgt_tree] = second_idx
+#     cont_seed = start_seed + rgt_tree
+#     print("chk chk!! :", rgt_tree)
+#     if rgt_tree >= 2:
+#         make_bkt_helper(rt_matrix, cnt_1, rgt_tree, second_idx, cont_seed, seed)
+    
+#     i = 2
+#     while i < rgt_tree:
+#         other_max = max(cnt_1[1:])
+#         other_idx = cnt_1.index(other_max)
+#         cnt_1[other_idx] = 0
+#         other_tree = rgt_tree // 2
+#         seed[start_seed + i] = other_idx
+#         print("chk! ", i, start_seed, other_tree, other_max, 'seed :' , other_idx , ' : ', seed)
+#         i += 2
+    
+#     print(seed)
+
+# def make_bkt(rt_matrix, n):
+#     seed = [0 for i in range(n)]
+#     idx = 0
+#     max_wins = 0
+#     cnt_1 = []
+#     for i in rt_matrix:
+#         num_wins = i.count(1)
+#         if idx != 0:
+#             cnt_1.append(num_wins)
+#         if num_wins > max_wins:
+#             max_wins = num_wins
+#             chose_o = idx
+#         print("++ ", i[0], idx, num_wins)
+#         idx += 1
+        
+#     print("+++ ", rt_matrix[chose_o])
+#     cnt_1.insert(0,rt_matrix[chose_o][0])
+#     print("+++ ", cnt_1)
+#     make_bkt_helper(rt_matrix, cnt_1, n, chose_o, 0, seed)
+    
+    
+#     # for i in seed: 
+#     #     seed[i+1] = find_matchup(cnt_1, seed, i)
+#     #     i += 2
+    
+    
+#     seed_nm = []
+#     for i in seed:
+#         seed_nm.append(rt_matrix[0][i])    
+#     return seed, seed_nm 
+
+# print(make_bkt(rt_matrix,16))
+
+
+# In[287]:
+
+
+def find_max(list):
+    chk_max = 0
+    idx = 0
+    max_idx = 0
+    for i in list[1:]:
+        if i > chk_max:
+            chk_max = i
+            max_idx = idx
+        idx += 1
+    return max_idx
+    
+def find_min(list):
+    chk_min = 999
+    idx = 0
+    min_idx = 0
+    for i in list[1:]:
+        if i < chk_min and i > 0:
+            chk_min = i
+            min_idx = idx
+        idx += 1
+    return min_idx
+    
+def make_bkt_helper(matrix, cnt_1, n, chose_o, start_seed, seed):
+    idx = 0
+    for i in rt_matrix[chose_o]:
+        if idx != 0:
+            if i != 1:
+                cnt_1[idx] = 0
+            if idx == chose_o:
+                cnt_1[idx] = 0
+        idx += 1
+    print("+++ ", cnt_1)
+    second_max = max(cnt_1[1:])
+    print("chk ", second_max)
+    second_idx = cnt_1.index(second_max)
+    cnt_1[second_idx] = 0
+    
+    print("chk chk ", start_seed)
+    seed[start_seed] =chose_o
+    rgt_tree = n // 2
+    seed[start_seed + rgt_tree] = second_idx
+    cont_seed = start_seed + rgt_tree
+    print("chk chk!! :", rgt_tree)
+    if rgt_tree >= 2:
+        make_bkt_helper(rt_matrix, cnt_1, rgt_tree, second_idx, cont_seed, seed)
+    
+    
+    print(seed)
+
+def make_bkt(rt_matrix, n):
+    chk = [i for i in range(n)]
+    seed = [0 for i in range(n)]
+    print(chk, seed)
+    idx = 0
+    max_wins = 0
+    cnt_1 = []
+    for i in rt_matrix:
+        num_wins = i.count(1)
+        if idx != 0:
+            cnt_1.append(num_wins)
+        if num_wins > max_wins:
+            max_wins = num_wins
+            chose_o = idx
+        # print("++ ", i[0], idx, num_wins)
+        idx += 1
+        
+    print("+++ ", chose_o, rt_matrix[chose_o])
+    cnt_1.insert(0,rt_matrix[chose_o][0])
+    seed[0] = chose_o
+    chk.remove(0)
+    print("+++ ", chk, seed)
+    
+    idx = 0
+    for i in rt_matrix[chose_o]:
+        if idx != 0:
+            if i != 1:
+                cnt_1[idx] = 0
+            if idx == chose_o:
+                cnt_1[idx] = 0
+        idx += 1
+    print("+++ ", cnt_1)
+    second_max = max(cnt_1[1:])
+    print("chk ", second_max)
+    second_idx = cnt_1.index(second_max)
+    cnt_1[second_idx] = 0
+    
+    rgt_tree = n // 2
+    seed[rgt_tree] = second_idx
+    chk.remove(rgt_tree)    
+    print("+++ ", chk, seed)
+    
+    min_idx = find_min(cnt_1)
+    seed[1] = min_idx
+    chk.remove(1)
+    
+    i = 2
+    while i < rgt_tree:
+        other_max = max(cnt_1[1:])
+        other_idx = cnt_1.index(other_max)
+        cnt_1[other_idx] = 0
+        other_tree = rgt_tree // 2
+        seed[i] = other_idx
+        print("chk! ", i, other_tree, other_max, 'seed :' , other_idx , ' : ', seed)
+        i += 2
+    # make_bkt_left_helper(rt_matrix, cnt_1, n, chose_o, 0, seed)
+    # make_bkt_right_helper(rt_matrix, cnt_1, n, chose_o, 0, seed)
+    
+    
+    seed_nm = []
+    for i in seed:
+        seed_nm.append(rt_matrix[0][i])    
+    return seed, seed_nm 
+
+print(make_bkt(rt_matrix,16))
 
