@@ -1,3 +1,5 @@
+
+
 teams_out = []
 tournament = []
 
@@ -51,23 +53,4 @@ def make_strongest_losser(winner_team,p,round):
     make_strongest_losser(oppenent,p,round-1)
     
 
-
-def P(i,j):
-    return match(i,j)[1]
- 
-#just a function can go through braket and find the opponent
-def opponent(player_i,round):
-    for (i,j) in tournament[round-1]:
-        if i == player_i:
-            return j
-        elif j == player_i:
-            return i
-    return None
-
-#go to the refrence for this one
-def Win_rate(player_i,round):
-    if round == 0 : return 1
-    opp_player = opponent(player_i,round)
-    if opp_player == None: return 0
-    return Win_rate(player_i,round-1) * P(player_i,opp_player) * Win_rate(opp_player,round-1)
 

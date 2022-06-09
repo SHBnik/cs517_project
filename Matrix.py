@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[1]:
 
 
 import pandas as pd
@@ -10,10 +9,10 @@ import matplotlib.pyplot as plt
 import os
 
 currentDir = os.getcwd()
-currentFileCSV2021 = currentDir +"\\" + "batpitch2021.csv"
+currentFileCSV2021 = currentDir +"\\ProbabiltyMatrixGenerator\\" + "batpitch2021.csv"
 # csvFileObj = open(currentFileCSV)
 batpitch2021 = pd.read_csv(currentFileCSV2021)
-currentFileCSV2019 = currentDir +"\\" + "batpitch2019.csv"
+currentFileCSV2019 = currentDir +"\\ProbabiltyMatrixGenerator\\" + "batpitch2019.csv"
 batpitch2019 = pd.read_csv(currentFileCSV2019)
 
 def f_z_norm(data):
@@ -25,8 +24,6 @@ def f_z_norm(data):
 batpitch2021.head()
 
 
-# In[2]:
-
 
 batpitch2021['z_Bat'] = f_z_norm(batpitch2021['Bat']) 
 batpitch2021['z_Pitch'] = f_z_norm(batpitch2021['Pitch']) 
@@ -34,7 +31,6 @@ batpitch2021['z_Pitch'] = f_z_norm(batpitch2021['Pitch'])
 batpitch2021.head()
 
 
-# In[3]:
 
 
 print(batpitch2021.loc[0,'Team'], batpitch2021.loc[0,'Rank'] )
@@ -44,7 +40,6 @@ for i in range(0,30):
         print("ARI :", i)
 
 
-# In[4]:
 
 
 import math
@@ -158,7 +153,6 @@ plt.ylabel('MES by different learning rate')
 plt.title('BGD with Z normalization')
 
 
-# In[5]:
 
 
 # We know that Pitching is more important than Batting in 2021 by BGD. Pitching 54%, Batting 46%. 
@@ -166,17 +160,16 @@ plt.title('BGD with Z normalization')
 # Now we're ready to make winning rate matrix. 
 
 
-# In[6]:
 
 
-ALmatchingCSV2021 = currentDir +"\\" + "ALmatching2021.csv"
+ALmatchingCSV2021 = currentDir +"\\ProbabiltyMatrixGenerator\\" + "ALmatching2021.csv"
 ALmat_data2021 = pd.read_csv(ALmatchingCSV2021)
-NLmatchingCSV2021 = currentDir +"\\" + "NLmatching2021.csv"
+NLmatchingCSV2021 = currentDir +"\\ProbabiltyMatrixGenerator\\" + "NLmatching2021.csv"
 NLmat_data2021 = pd.read_csv(NLmatchingCSV2021)
 
-ALmatchingCSV2019 = currentDir +"\\" + "ALmatching2019.csv"
+ALmatchingCSV2019 = currentDir +"\\ProbabiltyMatrixGenerator\\" + "ALmatching2019.csv"
 ALmat_data2019 = pd.read_csv(ALmatchingCSV2019)
-NLmatchingCSV2019 = currentDir +"\\" + "NLmatching2019.csv"
+NLmatchingCSV2019 = currentDir +"\\ProbabiltyMatrixGenerator\\" + "NLmatching2019.csv"
 NLmat_data2019 = pd.read_csv(NLmatchingCSV2019)
 
 # ALmat_data2021.head()
@@ -269,21 +262,18 @@ for i in range(0,60):
 print(df_TM)
 
 
-# In[8]:
+
 
 
 # pd.set_option('display.max_seq_items', None)
 # pd.set_option('display.max_columns', None)
 
 
-# In[301]:
-
 
 from IPython.core.display import HTML
 display(HTML(df_TM.to_html()))
 
 
-# In[146]:
 
 
 def match(team1, team2):
@@ -317,8 +307,6 @@ print(match('CLE21','BAL21'))
 # print(match('BAL2021','CIN2021'))
 
 
-# In[148]:
-
 
 names = ['BAL21','NYY21','SEA19','CHC19','LAD21','ATL21','TEX19','OAK21']
 # temp = []
@@ -343,8 +331,6 @@ for i in range(9):
         
 for i in matrix : print(i)
 
-
-# In[149]:
 
 
 filteredMatrix = []
@@ -371,7 +357,7 @@ for i in range(9):
 for i in matrix : print(i)
 
 
-# In[159]:
+
 
 
 import random
@@ -417,4 +403,25 @@ def make_mask(win_team, n):
     return matrix
 
 rt_matrix = make_mask('BAL19',32)
+
+
+
+def P(i,j):
+    return match(i,j)[1]
+ 
+#just a function can go through braket and find the opponent
+def opponent(player_i,round,tournament):
+    for (i,j) in tournament[round-1]:
+        if i == player_i:
+            return j
+        elif j == player_i:
+            return i
+    return None
+
+#go to the refrence for this one
+def Win_rate(player_i,round,tournament):
+    if round == 0 : return 1
+    opp_player = opponent(player_i,round,tournament)
+    if opp_player == None: return 0
+    return Win_rate(player_i,round-1,tournament) * P(player_i,opp_player) * Win_rate(opp_player,round-1,tournament)
 

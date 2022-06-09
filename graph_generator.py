@@ -49,13 +49,27 @@ def connected(g):
         else:      roots[rj] = ri
     return len(set([_root(node)[0] for node in nodes]))==1
 
+
+
+
+mem = set({})
+def filter(g, target_nv):
+    """Filter all improper graphs: those with not enough nodes, 
+    those not fully connected, and those isomorphic to previously considered."""
+    global mem
+    nv = len(set([i for e in g for i in e]))
+    if nv == target_nv and connected(g) and tuple(g) not in mem:
+        mem |= set(permute(g, target_nv))
+        return True
+    return False
+
 def generate_graph(n=2,e=0):
-  out = []
-  all_edges = []
-  for i in range(n):
-    for j in range(i,n):
-        if not i == j:
-            all_edges.append((i,j))
+    out = []
+    all_edges = []
+    for i in range(n):
+        for j in range(i,n):
+            if not i == j:
+                all_edges.append((i,j))
 
     N = len(all_edges)
     # enumerate the 2**N possible combinations
@@ -90,3 +104,6 @@ def change_format(graph,n):
         edge.append(chr(ascii_base + i[0]) + chr(ascii_base + i[1]))
 
     return node,edge
+
+
+print(generate_graph(3))
