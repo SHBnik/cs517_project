@@ -541,3 +541,33 @@ def bracketGenerator(graph):
     players = fillPlayers(players)
     tour = bracketMaker(players, nodes, edges, covers)
     return tour
+
+
+def bracketGenerator2(nodes, edgesPair):
+    covers = vertex_cover(nodes, edgesPair) #put solver
+    players = buildPlayers(nodes, edges, covers)
+    #rounds of number of players
+    def getFullPlayers(playerNums):
+        n = 0
+        stopFlag = False
+        while (not stopFlag):
+            if playerNums > 2**n:
+                n += 1
+            else:
+                stopFlag = True
+        return 2**n
+    def fillPlayers(playersList):
+        playerNums = np.sum([
+            len(playersList['objectivePlayer']),
+            len(playersList['vertexPlayers']),
+            len(playersList['edgePlayers']),
+            len(playersList['fillerPlayers']),
+            len(playersList['holderPlayers'])
+        ])
+        if getFullPlayers(playerNums) > playerNums:
+            for i in range(0, getFullPlayers(playerNums) - playerNums):
+                players['holderPlayers'].append(Player('holder', f'h^{i}_o_ammend', 1))
+        return playersList
+    players = fillPlayers(players)
+    tour = bracketMaker(players, nodes, edges, covers)
+    return tour
