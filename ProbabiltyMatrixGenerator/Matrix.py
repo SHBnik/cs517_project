@@ -183,7 +183,7 @@ NLmat_data2019 = pd.read_csv(NLmatchingCSV2019)
 NLmat_data2019.head()
 
 
-# In[7]:
+# In[300]:
 
 
 def find_rank(team):
@@ -254,7 +254,9 @@ for i in range(0,60):
         forecasting_rate = round(learn_from_past * 0.5 + learn_from_ability * 0.5, 3)
         
         if j == i+1 and forecasting_rate > 1:
-            forecasting_rate = 1
+            forecasting_rate = 0.5
+        # if j == i+1:
+        #     forecasting_rate = 0
             
         df_TM.iloc[i,j] = forecasting_rate
 
@@ -274,7 +276,7 @@ print(df_TM)
 # pd.set_option('display.max_columns', None)
 
 
-# In[9]:
+# In[301]:
 
 
 from IPython.core.display import HTML
@@ -369,7 +371,7 @@ for i in range(9):
 for i in matrix : print(i)
 
 
-# In[151]:
+# In[159]:
 
 
 import random
@@ -407,10 +409,12 @@ def make_mask(win_team, n):
             if j == 0 :
                 temp.append(names[i-1])
                 continue
-            temp.append(filterResult(match(names[i-1],names[j-1])[1], 0.1))
+            temp.append(filterResult(match(names[i-1],names[j-1])[1], 0.05))
         matrix.append(temp)
 
     for i in matrix : print(i)
+    ##
+    return matrix
 
-make_mask('BAL19',20)
+rt_matrix = make_mask('BAL19',32)
 
